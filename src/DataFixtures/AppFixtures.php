@@ -7,7 +7,7 @@ use App\Entity\Personne;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Faker\Factory;
-
+use Symfony\Component\Validator\Constraints\Date;
 class AppFixtures extends Fixture
 {
     public function load(ObjectManager $manager)
@@ -18,7 +18,7 @@ class AppFixtures extends Fixture
             $personne = new Personne;
             $personne->setNom($faker->lastName);
             $personne->setPrenom($faker->firstName);
-
+            $personne->setDateEnregistrement(new \DateTime('now'));
             for ($c = 0; $c < mt_rand(1, 5); $c++) {
                 $adresse = new Adresse;
                 $adresse->setRue($faker->streetName);

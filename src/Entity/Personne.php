@@ -2,13 +2,26 @@
 
 namespace App\Entity;
 
-use App\Repository\PersonneRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PersonneRepository;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ORM\Entity(repositoryClass=PersonneRepository::class)
+ * @ApiResource(
+ * attributes={"security"="is_granted('ROLE_ADMIN')"},
+* collectionOperations={"get","post"},
+* itemOperations={"get", "put", "delete"},
+* normalizationContext={"groups"={"personne:read"}},
+* denormalizationContext={"groups"={"personne:write"}}
+* )
+*@ApiFilter(SearchFilter::class, properties={"adresses.ville": "partial"})
  */
 class Personne
 {
@@ -21,18 +34,29 @@ class Personne
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"personne:read", "personne:write"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"personne:read", "personne:write"})
      */
     private $prenom;
 
     /**
      * @ORM\ManyToMany(targetEntity=Adresse::class, inversedBy="personnes", cascade={"remove", "persist"})
+     * @Groups({"personne:read", "personne:write"})
+     * @ApiSubresource
      */
     private $adresses;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=false)
+     * @Groups({"personne:read"})
+     */
+    private $dateEnregistrement;
+
 
     public function __construct()
     {
@@ -93,4 +117,17 @@ class Personne
 
         return $this;
     }
+
+    public function getDateEnregistrement(): ?\DateTimeInterface
+    {
+        return $this->dateEnregistrement;
+    }
+
+    public function setDateEnregistrement(?\DateTimeInterface $dateEnregistrement): self
+    {
+        $this->dateEnregistrement = $dateEnregistrement;
+
+        return $this;
+    }
+
 }
